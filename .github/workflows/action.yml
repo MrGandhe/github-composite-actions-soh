@@ -1,0 +1,70 @@
+name: Reusable workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      BUCKET_NAME:
+        type: choice
+        description: 'bucket name'
+        required: true
+        options: 
+        - tf-state-bucket1
+      KEY_NAME:
+        type: string
+        description: 'Key name'
+        required: true
+        default: state/terraform.tfstate
+      STATE_LOCK_TABLE_NAME:
+        type: string
+        description: 'Dynamodb table name'
+        required: true
+        default: terraform-state-lock-dynamo
+      REGION_NAME:
+        type: choice
+        description: 'region'
+        required: true
+        options: 
+        - ap-south-1
+      ENVIRONMENT_NAME:
+        type: choice
+        description: 'region'
+        required: true
+        options: 
+        - test
+        - prod
+        - dev
+      DIRECTORY_NAME:
+        type: choice
+        description: 'Root directory'
+        required: true
+        options: 
+        - s3-sqs-event
+        - s3-bucket
+      TERRAFORM_COMMAND:
+        type: choice
+        description: 'Terraform command'
+        required: true
+        options: 
+        - Plan
+        - Apply
+        - Plan-Destroy
+        - Destroy
+#     secrets:
+#       AWS_ACCESS_KEY:
+#         required: true
+#       AWS_SECRET_ACCESS_KEY:
+#         required: true
+jobs:
+  build-test-scan-wf:
+    uses: virtuecloud/sqs-for-s3-caller/.github/workflows/action.yml@main
+    with:
+      BUCKET_NAME: ${{ github.event.inputs.BUCKET_NAME }}
+      KEY_NAME: ${{ github.event.inputs.KEY_NAME }}
+      STATE_LOCK_TABLE_NAME: ${{ github.event.inputs.STATE_LOCK_TABLE_NAME }}
+      REGION_NAME: ${{ github.event.inputs.REGION_NAME }}
+      ENVIRONMENT_NAME: ${{ github.event.inputs.ENVIRONMENT_NAME }}
+      DIRECTORY_NAME: ${{ github.event.inputs.DIRECTORY_NAME }}
+      TERRAFORM_COMMAND: ${{ github.event.inputs.TERRAFORM_COMMAND }}
+    secrets:
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
